@@ -21,6 +21,9 @@ import SkillsPage from "./pages/SkillsPage";
 import CompanyList from "./pages/CompanyList";
 import CompanyDetail from "./pages/CompanyDetail";
 import EmployerCompanyProfile from "./pages/EmployerCompanyProfile";
+import JobDetail from './pages/JobDetail'; // ✅ tạo file này ở bước 3
+import CompanyJobs from "./pages/CompanyJobs";
+
 
 // ✅ Guard đơn giản
 const RequireAuth = ({ children }) => {
@@ -82,11 +85,19 @@ function App() {
               <Route path="/employer/company" element={<EmployerCompanyProfile />} />
 
             {/* Chat */}
+
+              {/* Public */}
+            <Route path="/" element={<Navigate to="/jobs" replace />} />
+            <Route path="/jobs" element={<JobList />} />
+            <Route path="/jobs/:id" element={<JobDetail />} />
+              {/* ... các route khác giữ nguyên */}
             <Route
               path="/chat"
               element={<ChatRoom jobId={jobId} currentUserId={currentUserId} targetUserId={targetUserId} />}
             />
+            <Route path="/company/jobs" element={<CompanyJobs />} />
           </Routes>
+          
           {/* public */}
         </main>
         <Footer />

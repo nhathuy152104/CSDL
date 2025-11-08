@@ -1,4 +1,3 @@
-// src/api/companyApi.js
 import axiosClient from "./axiosClient";
 
 const companyApi = {

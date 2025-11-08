@@ -19,9 +19,7 @@ class SignupRequest(BaseModel):
     password: str
     role: str
 
-class AddSkillRequest(BaseModel):
-    level: int
-    years_exp: Optional[float] = None
+
 
 @router.post("/login")
 def login_api(req: LoginRequest):
@@ -62,38 +60,3 @@ def register_api(req: SignupRequest):
         return {"success": True, "message": "Đăng ký thành công!"}
     
     raise HTTPException(status_code=400, detail=result.get("error", "Signup failed"))
-
-@router.get("/profile")
-def get_profile(request: Request):
-    role =  request.cookies.get("Role")
-    user_id = request.cookies.get("UserID")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated.")
-    return
-@router.post("/skills/{skill_id}", status_code=201)
-def add_skill(request: Request,req: AddSkillRequest, skill_id):
-    role = request.cookies.get("Role")
-    user_id = request.cookies.get("UserID")
-    data = {
-        "user_id": int(user_id),
-        "skill_id": int(skill_id),
-        "level": req.level,
-        "years_exp": req.years_exp
-    }
-    return Skill.add_skill(data)
-@router.get("/skills/")
-def get_mine_skill(request: Request):
-    role = request.cookies.get("Role")
-    user_id = request.cookies.get("UserID")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated.")
-    return Skill.get_mine_skill(user_id)
-
-@router.delete("/skills/{skill_id}")
-def delete_mine_skill(request:Request, skill_id):
-    role = request.cookies.get("Role")
-    user_id = request.cookies.get("UserID")
-    print(user_id)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated.")
-    return Skill.remove_skill(user_id, skill_id)

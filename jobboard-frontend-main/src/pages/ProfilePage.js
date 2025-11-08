@@ -26,7 +26,7 @@ export default function ProfilePage() {
     (async () => {
       setLoading(true);
       try {
-        const res = await userApi.getMe();
+        const res = await userApi.getprofile();
         const u = res.data || {};
         setEmail(u.email || ""); setFullName(u.full_name || ""); setPhone(u.phone || "");
         const sk = await skillApi.listMine();

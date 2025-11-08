@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Briefcase, MapPin, Clock, Search, Filter, Star, Heart } from 'lucide-react';
-import jobApi from '../api/jobApi'; // nhớ đúng path tới file bạn đã tạo
+import jobApi from '../api/jobApi';
+import { useNavigate } from "react-router-dom";
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
@@ -10,6 +11,7 @@ const JobList = () => {
   const [appliedJobs, setAppliedJobs] = useState(new Set());
   const [favoriteJobs, setFavoriteJobs] = useState(new Set());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onMove = (e) => setMousePosition({ x: e.clientX, y: e.clientY });
@@ -17,7 +19,6 @@ const JobList = () => {
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
-  // Load jobs qua jobApi
   useEffect(() => {
     (async () => {
       try {
@@ -34,7 +35,6 @@ const JobList = () => {
     })();
   }, []);
 
-  // Apply job qua jobApi (POST /api/job/{id}/apply)
   const handleApply = async (id) => {
     try {
       await jobApi.apply(id);
@@ -56,7 +56,7 @@ const JobList = () => {
 
   const filteredJobs = jobs.filter((job) => {
     const title = (job.title || '').toString();
-    const company = (job.company || '').toString();
+    const company = (job.company?.name ?? job.company ?? '').toString();
     const location = (job.location || '').toString();
 
     const matchesSearch =
@@ -135,36 +135,50 @@ const JobList = () => {
           {filteredJobs.length === 0 && (
             <p className="text-white text-center col-span-full">No jobs found</p>
           )}
-          {filteredJobs.map((job) => (
-            <div key={job.id} className="p-6 rounded-3xl bg-white/10 border border-white/20 shadow-2xl flex flex-col justify-between">
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-white">{job.title}</h3>
-                  <button onClick={() => toggleFavorite(job.id)} aria-label="Toggle favorite">
-                    <Heart className={`w-5 h-5 ${favoriteJobs.has(job.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} />
-                  </button>
-                </div>
-                <p className="text-gray-300 text-sm mb-4">{job.description}</p>
-                <div className="flex gap-4 text-gray-300 text-sm">
-                  <span><MapPin className="inline w-4 h-4 mr-1" /> {job.location}</span>
-                  <span><Clock className="inline w-4 h-4 mr-1" /> Posted recently</span>
-                  <span>Company: {job.company}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleApply(job.id)}
-                disabled={appliedJobs.has(job.id)}
-                className={`mt-4 py-3 rounded-xl font-semibold text-white w-full ${
-                  appliedJobs.has(job.id)
-                    ? 'bg-emerald-600 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105'
-                }`}
+          {filteredJobs.map((job) => {
+            const id = job.id ?? job.job_id; // support both shapes
+            const companyName = job.company?.name ?? job.company ?? '—';
+            return (
+              <div
+                key={id}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/jobs/${id}`)} // 👉 go to detail page
+                onKeyDown={(e) => (e.key === 'Enter' ? navigate(`/jobs/${id}`) : null)}
+                className="p-6 rounded-3xl bg-white/10 border border-white/20 shadow-2xl flex flex-col justify-between cursor-pointer hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               >
-                {appliedJobs.has(job.id) ? '✅ Applied' : '📤 One-Click Apply'}
-              </button>
-            </div>
-          ))}
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-xl font-bold text-white line-clamp-1">{job.title}</h3>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(id); }}
+                      aria-label="Toggle favorite"
+                    >
+                      <Heart className={`w-5 h-5 ${favoriteJobs.has(id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} />
+                    </button>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-3">{job.description}</p>
+                  <div className="flex gap-4 text-gray-300 text-sm">
+                    <span><MapPin className="inline w-4 h-4 mr-1" /> {job.location}</span>
+                    <span><Clock className="inline w-4 h-4 mr-1" /> Posted recently</span>
+                    <span>Company: {companyName}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleApply(id); }}
+                  disabled={appliedJobs.has(id)}
+                  className={`mt-4 py-3 rounded-xl font-semibold text-white w-full ${
+                    appliedJobs.has(id)
+                      ? 'bg-emerald-600 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:scale-105'
+                  }`}
+                >
+                  {appliedJobs.has(id) ? '✅ Applied' : '📤 One-Click Apply'}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -168,10 +168,9 @@ const Navbar = () => {
           )}
 
           <Link to="/" className={navItemClass('/')}>Jobs</Link>
-          <Link to="/post-job" className={navItemClass('/post-job')}>Post Job</Link>
           <Link to="/chat" className={navItemClass('/chat')}>Chat</Link>
           <Link to="/companies" className={navItemClass('/companies')}>Companies</Link>
-
+          <Link to="/company/jobs" className={navItemClass('/company/jobs')}>PostedJob</Link>
           {userRole === 'employer' && (
             <Link to="/employer/applications" className={navItemClass('/employer/applications')}>
               <div className="flex items-center gap-1">

@@ -1,13 +1,16 @@
-from fastapi import APIRouter, Request, Depends, status, HTTPException
+from fastapi import APIRouter, Request, Depends, status, HTTPException, Form, UploadFile, File, Request
 from fastapi.responses import JSONResponse
 from controller.Job import Job  # Create a Job controller similar to Book
 from pydantic import BaseModel
+from datetime import date
+from typing import List
+import json
 
 router = APIRouter(prefix="/job", tags=["Job"])
 
 
 
-# Middleware: admin required
+
 def employer_required(request: Request):
     role = request.session.get("Role")
     if role != "employer":
@@ -41,6 +44,23 @@ def get_jobs(location: str = None):
     ]
     return {"jobs": jobs}
 
+@router.get("/by-company")
+def get_job_by_company():
+    jobs_from_db = Job.get_by_company(11)
+    jobs = [
+        {
+            "id": j["job_id"],  
+            "title": j["title"],
+            "company": j["company_id"],
+            "location": j["location"],
+            "description": j["description"],
+            "postedAt": j["posted_at"].isoformat() if j["posted_at"] else None,
+            "salary": j.get("salary"),
+            "type": j.get("employment_type", "Full-time")
+        }
+        for j in jobs_from_db
+    ]
+    return {"jobs": jobs}
 
 
 # -----------------------
@@ -72,36 +92,50 @@ def apply_job(job_id: int, request: Request):
     print(user_id)
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated.")
-    # seeker/user mới được apply
     if role not in ("user", "seeker"):
         raise HTTPException(status_code=403, detail="Login as job seeker to apply.")
 
     ok, created = Job.apply_job(job_id, int(user_id))
     if not ok:
         raise HTTPException(status_code=400, detail="Apply failed.")
-    # created=False nghĩa là đã nộp trước đó (no-op)
     return {"success": True, "applied": created}
 # -----------------------
 # ➕ ADD NEW JOB (COMPANY ONLY)
 # -----------------------
 @router.post("/add")
-async def add_job(request: Request, _=Depends(employer_required)):
-    form = await request.form()
-    title = form.get("title")
-    company = form.get("company")
-    location = form.get("location")
-    description = form.get("description")
+async def add_job(
+    title: str = Form(...),
+    description: str = Form(...),
+    location: str = Form(...),
+    employment: str = Form(...),
+    salary_min: float = Form(...),
+    salary_max: float = Form(...),
+    expires_at: date = Form(...),
+    skills: str = Form(...),             # JSON string from FormData
+    pdf: UploadFile | None = File(None),
+):
+    if salary_max < salary_min:
+        raise HTTPException(400, "salary_max must be >= salary_min")
 
-    if not all([title, company, location, description]):
-        raise HTTPException(status_code=400, detail="Missing fields")
-
-    # Save to database (example)
-    Job.add(title, company, location, description)
-
-    return JSONResponse(
-        content={"message": "Job posted successfully"},
-        status_code=status.HTTP_201_CREATED
-    )
+    try:
+        skill_list = json.loads(skills)
+        if not isinstance(skill_list, list):
+            raise ValueError
+    except Exception:
+        raise HTTPException(400, "Invalid skills JSON")
+    data = { "title": title, 
+            "description": description, 
+            "location": location, 
+            "employment": employment, 
+            "salary_min": salary_min, 
+            "salary_max": salary_max, 
+            "expires_at": expires_at, 
+            "skills": skill_list }
+    print(data)
+    Job.add(11, data)
+    # Save: Job.add(...); then for each s in skill_list insert into job_skills...
+    return {"message": "Job posted successfully"}
+    
 # -----------------------
 # ✏️ UPDATE JOB (ADMIN ONLY)
 # -----------------------
@@ -123,10 +157,8 @@ def update_job(job_id: int, data: dict, request: Request = None, _=Depends(admin
     )
     return {"message": "Job updated successfully"}
 
-# -----------------------
-# ❌ DELETE JOB (ADMIN ONLY)
-# -----------------------
-@router.delete("/delete/{job_id}")
-def delete_job(job_id: int, _=Depends(admin_required)):
+
+@router.delete("/{job_id}")
+def delete_job(job_id: int):
     Job.delete(job_id)
     return {"message": "Job deleted successfully"}
