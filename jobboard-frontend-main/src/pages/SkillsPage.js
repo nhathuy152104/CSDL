@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Plus, Pencil } from "lucide-react";
 import skillApi from "../api/skillApi";
+import profileApi from "../api/profileApi";
 
 const TAGS = [
   { key: "all", label: "Tất cả" },
@@ -32,7 +33,7 @@ export default function SkillsPage() {
     (async () => {
       setLoading(true);
       try {
-        const res = await skillApi.listMine();
+        const res = await profileApi.listMine();
         setItems(Array.isArray(res.data) ? res.data : []);
       } finally { setLoading(false); }
     })();
@@ -56,14 +57,14 @@ export default function SkillsPage() {
       x.skill_id === id ? { ...x, level: editLevel, years_exp: editYears } : x
     );
     setItems(next); setEditingId(null);
-    try { await skillApi.upsertMine(id, { level: editLevel, years_exp: editYears }); }
+    try { await profileApi.upsertMine(id, { level: editLevel, years_exp: editYears }); }
     catch { setItems(prev); alert("Cập nhật thất bại"); }
   };
 
   const removeOne = async (id) => {
     if (!window.confirm("Xoá kỹ năng này?")) return;
     const prev = items; setItems(prev.filter((x) => x.skill_id !== id));
-    try { await skillApi.removeMine(id); }
+    try { await profileApi.removeMine(id); }
     catch { setItems(prev); alert("Xoá thất bại"); }
   };
 
@@ -194,7 +195,7 @@ function AddSkillModal({ onClose, onAdded }) {
   const addOne = async (opt) => {
     setAddingId(opt.skill_id);
     try {
-      await skillApi.upsertMine(opt.skill_id, { level: 1, years_exp: 0 });
+      await profileApi.upsertMine(opt.skill_id, { level: 1, years_exp: 0 });
       onAdded({ ...opt, level: 1, years_exp: 0 });
     } catch { alert("Thêm kỹ năng thất bại"); }
     finally { setAddingId(null); }

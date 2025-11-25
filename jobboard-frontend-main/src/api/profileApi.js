@@ -10,7 +10,7 @@ const profileApi = {
     upsertMine: (skillId, data) =>
         axiosClient.post(`/profile/skills/${skillId}`, data),
     removeMine: (skillId) =>
-        axiosClient.delete(`/user/skills/${skillId}`),
+        axiosClient.delete(`/profile/skills/${skillId}`),
     getCV: () => axiosClient.get("/api/profile/cv"),
 
 }

@@ -28,11 +28,8 @@ const Register = () => {
   };
 
   const validate = () => {
-    if (!form.name.trim()) return "Full name is required.";
     if (!form.email.trim()) return "Email is required.";
     if (!emailRegex.test(form.email)) return "Invalid email format.";
-    if (!form.phone.trim()) return "Phone number is required.";
-    if (!phoneRegex.test(form.phone)) return "Invalid phone number.";
     if (!form.password) return "Password is required.";
     if (form.password.length < 6) return "Password must be at least 6 characters.";
     return "";
@@ -138,17 +135,6 @@ const Register = () => {
           )}
 
           <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            autoComplete="name"
-            disabled={loading}
-          />
-
-          <input
             type="email"
             name="email"
             placeholder="Email Address"
@@ -159,16 +145,6 @@ const Register = () => {
             disabled={loading}
           />
 
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone Number"
-            value={form.phone}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            autoComplete="tel"
-            disabled={loading}
-          />
 
           <input
             type="password"

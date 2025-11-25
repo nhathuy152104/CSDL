@@ -21,7 +21,7 @@ class Company:
             conn.close()
 
     @staticmethod
-    def update(company_id: int, **data):
+    def update(company_id: int, data):
         """Update a company record."""
         if not data:
             return {"success": False, "error": "No data provided for update"}

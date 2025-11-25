@@ -23,11 +23,20 @@ from routers.User_routes import router as user_router
 from routers.Job_Routes import router as job_router
 from routers.Skills_routers import router as skill_router
 from routers.Company_routes import router as company_router
+from routers.Profile_route import router as profile_router
+from routers.Application_routes import router as Application_router
+from routers.Location_route import router as Location_router
+
 # Register routers
 app.include_router(user_router, prefix="/api")
 app.include_router(job_router, prefix = "/api")
 app.include_router(skill_router, prefix="/api")
 app.include_router(company_router, prefix="/api")
+app.include_router(profile_router, prefix="/api")
+app.include_router(Application_router, prefix="/api")
+app.include_router(Location_router, prefix="/api")
+
+
 @app.get("/") 
 def home(): 
     return {"message": "Welcome to the Book Library API"}

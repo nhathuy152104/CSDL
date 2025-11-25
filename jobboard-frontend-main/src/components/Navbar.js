@@ -168,19 +168,17 @@ const Navbar = () => {
           )}
 
           <Link to="/" className={navItemClass('/')}>Jobs</Link>
-          <Link to="/chat" className={navItemClass('/chat')}>Chat</Link>
           <Link to="/companies" className={navItemClass('/companies')}>Companies</Link>
-          <Link to="/company/jobs" className={navItemClass('/company/jobs')}>PostedJob</Link>
           {userRole === 'employer' && (
-            <Link to="/employer/applications" className={navItemClass('/employer/applications')}>
-              <div className="flex items-center gap-1">
-                <Briefcase size={16} /> Applications
-              </div>
+            <Link to="/company/jobs" className={navItemClass('/company/jobs')}>
+              PostedJob
             </Link>
           )}
           {userRole === 'seeker' && (
-            <Link to="/seeker/dashboard" className={navItemClass('/seeker/dashboard')}>
-              Candidate Dashboard
+            <Link to="/my-applications" className={navItemClass('/my-applications')}>
+              <div className="flex items-center gap-1">
+                <Briefcase size={16} /> My Applications
+              </div>
             </Link>
           )}
           {/* ✅ Dropdown người dùng (desktop) */}

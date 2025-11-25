@@ -6,24 +6,23 @@ import JobList from './pages/JobList';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import PostJob from './pages/PostJob';
-import EmployerApplications from './pages/EmployerApplications';
 import EmployerOnlyPage from './pages/EmployerOnlyPage';
 import CandidateDashboard from './pages/CandidateDashboard';
 import EmployerDashboard from './pages/EmployerDashboard';
 import ChatRoom from './components/ChatRoom';
 import About from './pages/About';
-import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
-import ProfilePage from './pages/ProfilePage'; // ✅ thêm
+import ProfilePage from './pages/ProfilePage'; 
 import SkillsPage from "./pages/SkillsPage";
 import CompanyList from "./pages/CompanyList";
 import CompanyDetail from "./pages/CompanyDetail";
 import EmployerCompanyProfile from "./pages/EmployerCompanyProfile";
-import JobDetail from './pages/JobDetail'; // ✅ tạo file này ở bước 3
+import JobDetail from './pages/JobDetail';
 import CompanyJobs from "./pages/CompanyJobs";
-
+import SeekerApplications  from './pages/SeekerApplications';
+import CompanyProfilePage from './pages/CompanyProfile';
 
 // ✅ Guard đơn giản
 const RequireAuth = ({ children }) => {
@@ -44,14 +43,12 @@ function App() {
         <main className="flex-grow ml-0 md:ml-60 p-6">
           <Routes>
             {/* Public */}
-            <Route path="/" element={<JobList />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/post-job" element={<PostJob />} />
 
             {/* Info */}
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
@@ -69,16 +66,11 @@ function App() {
             {/* Employer-only */}
             <Route
               path="/employer/applications"
-              element={userRole === 'employer' ? <EmployerApplications /> : <EmployerOnlyPage />}
             />
             <Route path="/EmployerApplications" element={<Navigate to="/employer/applications" replace />} />
             <Route path="/skills" element={<SkillsPage />} />
 
-            {/* Dashboards */}
-            <Route
-              path="/seeker/dashboard"
-              element={userRole === 'employer' ? <EmployerDashboard /> : <CandidateDashboard />}
-            />
+            
               <Route path="/companies" element={<CompanyList />} />
               <Route path="/companies/:id" element={<CompanyDetail />} />
 
@@ -96,6 +88,13 @@ function App() {
               element={<ChatRoom jobId={jobId} currentUserId={currentUserId} targetUserId={targetUserId} />}
             />
             <Route path="/company/jobs" element={<CompanyJobs />} />
+            <Route path="/my-applications" element={<SeekerApplications />} />
+            <Route
+              path="/company/jobs/:id/candidates"
+              element={<CandidateDashboard />}
+            />
+              <Route path="/company/:id" element={<CompanyProfilePage/>} />
+
           </Routes>
           
           {/* public */}

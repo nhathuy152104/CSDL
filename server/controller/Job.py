@@ -30,7 +30,46 @@ class Job:
         cursor.close()
         conn.close()
         return result
-    
+    def get_by_filter(data):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        region = data.get("region")
+        min_salary = data.get("min_salary")
+        max_salary = data.get("max_salary")
+        skill_ids = data.get("skills_id", [])
+
+        # Tạo placeholder cho IN clause
+        skill_placeholders = ','.join(['%s'] * len(skill_ids))
+        
+        query = f"""
+            SELECT DISTINCT jb.*
+            FROM jobs AS jb
+            JOIN job_skills AS js ON jb.job_id = js.job_id
+            JOIN region AS rg ON jb.region_id = rg.region_id
+            WHERE js.skill_id IN ({skill_placeholders})
+        """
+
+        params = skill_ids
+
+        if min_salary is not None:
+            query += " AND jb.salary_min >= %s"
+            params.append(min_salary)
+
+        if max_salary is not None:
+            query += " AND jb.salary_max <= %s"
+            params.append(max_salary)
+
+        if region:
+            query += " AND rg.region_id = %s"
+            params.append(region)
+
+        cursor.execute(query, params)
+        result = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return result
+
     def get_by_company(company_id):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
@@ -79,15 +118,37 @@ class Job:
         cursor.close()
         conn.close()
         return result
+    def get_by_skill(skill_ids):
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        placeholder = ",".join(["%s"] * len(skill_ids))  # tạo "%s,%s,%s"
+        
+        query = f"""
+            SELECT jb.*
+            FROM jobs AS jb
+            JOIN job_skills AS js ON jb.job_id = js.job_id
+            WHERE js.skill_id IN ({placeholder})
+            GROUP BY jb.job_id
+            HAVING COUNT(DISTINCT js.skill_id) = %s;
+        """
+
+        params = skill_ids + [len(skill_ids)]
+
+        cursor.execute(query, params)
+        result = cursor.fetchall()
+
+        return result   
 
     @staticmethod
     def add(company_id, data):
+        print(data)
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO jobs 
-                (company_id, title, description, location, salary_min, salary_max, employment_type, expires_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) 
+                (company_id, title, description, location, salary_min, salary_max, employment_type, expires_at, region_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) 
         """, (
             company_id,
             data["title"],
@@ -96,7 +157,8 @@ class Job:
             data["salary_min"],
             data["salary_max"],
             data["employment"],
-            data["expires_at"]
+            data["expires_at"],
+            data["region_id"]
         ))
         conn.commit()
 
@@ -153,27 +215,3 @@ class Job:
         cursor.close()
         conn.close()
         return True
-    def apply_job(job_id: int, user_id: int):
-        """
-        Trả về (ok: bool, created: bool)
-        - created=True khi INSERT mới
-        - created=False khi đã tồn tại (đụng UNIQUE KEY)
-        """
-        conn = get_connection()
-        try:
-            print("Trying")
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO applications (job_id, user_id)
-                    VALUES (%s, %s)
-                """, (job_id, user_id))
-                created = (cursor.rowcount == 1)
-            conn.commit()
-            cursor.close()
-            conn.close()
-            return True, created
-        except Exception:
-            conn.rollback()
-            return False, False
-        finally:
-            conn.close()

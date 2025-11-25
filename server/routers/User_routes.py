@@ -49,9 +49,7 @@ def register_api(req: SignupRequest):
         raise HTTPException(status_code=400, detail="Email phải là Gmail")
 
     data = {
-        "fullname": req.full_name,
         "email": req.email,
-        "phone": req.phone,
         "password": req.password,
         "role": req.role
     }

@@ -2,15 +2,7 @@ from .mysqlconnector import get_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User:
-    @staticmethod
-    def get_all():
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT user_id, name, email, role, created_at FROM users")
-        result = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return result
+
 
     @staticmethod
     def check_login(email, password):
@@ -46,8 +38,8 @@ class User:
 
         # 🧩 Insert user
         cursor.execute(
-            "INSERT INTO users (full_name, email, phone, password_hash, role) VALUES (%s, %s, %s, %s, %s)",
-            (data["fullname"], data["email"], data["phone"], hashed_pw, data["role"])
+            "INSERT INTO users (full_name, email, password_hash, role) VALUES (%s, %s, %s, %s)",
+            ("Huy", data["email"], hashed_pw, data["role"])
         )
         conn.commit()
         cursor.close()

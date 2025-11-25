@@ -1,4 +1,4 @@
-from mysqlconnector import get_connection
+from .mysqlconnector import get_connection
 
 class Profile:
     def get_profile_user(user_id):
@@ -8,28 +8,28 @@ class Profile:
             cursor.execute("""
                 SELECT 
                     user_id,
-                    username,
+                    full_name,
                     email,
+                    phone
                 FROM users
                 WHERE user_id = %s
             """, (user_id,))
 
             row = cursor.fetchone()
-            row["skills"] = row["skills"].split(", ")  
             return {"success": True, "profile" : row}
-        finally:
-            return {"success": False}
-    def update_profile_user(user_id, data):
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE users SET
-                full_name = %s, phone = %s
-                WHERE user_id = %s
-            """, (data["full_name"], data["phone"], user_id))
-        finally:
-            conn.close()
+        except Exception as e:
+            return {"success": False, "Exception": e}
+    def update_profile_user(data, user_id):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users SET
+            full_name = %s, phone = %s
+            WHERE user_id = %s
+        """, (data["full_name"], data["phone"], user_id))
+        conn.commit()
+        conn.close()
+        return {"success": True}
     def get_mine_skill(user_id):
         conn = get_connection()
         try:

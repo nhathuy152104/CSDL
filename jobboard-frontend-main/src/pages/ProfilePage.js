@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import userApi from "../api/userApi";
+import profileApi from "../api/profileApi";
 import skillApi from "../api/skillApi";
 
 const phoneRegex = /^[0-9+\-\s()]{8,20}$/;
@@ -23,18 +23,34 @@ export default function ProfilePage() {
   const [skills, setSkills] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await userApi.getprofile();
-        const u = res.data || {};
-        setEmail(u.email || ""); setFullName(u.full_name || ""); setPhone(u.phone || "");
-        const sk = await skillApi.listMine();
-        const list = Array.isArray(sk.data) ? sk.data : [];
-        setSkills(list.map(s => ({ skill_id: s.skill_id, name: s.name, level: s.level ?? 1, years_exp: s.years_exp ?? 0 })));
-      } finally { setLoading(false); }
-    })();
-  }, []);
+  (async () => {
+    setLoading(true);
+    try {
+      const res = await profileApi.getMe();
+      // Accept either res.data.profile OR res.data
+      const u = res?.data?.profile ?? res?.data ?? {};
+      setEmail(u.email || "");
+      setFullName(u.full_name || "");
+      setPhone(u.phone || "");
+
+      // Skills: also be defensive about structure
+      const sk = await profileApi.listMine();
+      const list = Array.isArray(sk?.data) ? sk.data
+                 : Array.isArray(sk?.data?.result) ? sk.data.result
+                 : Array.isArray(sk?.data?.profile_skills) ? sk.data.profile_skills
+                 : [];
+      setSkills(list.map(s => ({
+        skill_id: s.skill_id ?? s.id,
+        name: s.name,
+        level: s.level ?? 1,
+        years_exp: s.years_exp ?? s.yearsExperience ?? 0
+      })));
+    } finally {
+      setLoading(false);
+    }
+  })();
+}, []);
+
 
   const validate = () => {
     if (!fullName.trim()) return "Full name is required.";
@@ -49,7 +65,7 @@ export default function ProfilePage() {
     const v = validate(); if (v) { setMsg(v); return; }
     setSaving(true); setMsg("");
     try {
-      const res = await userApi.updateProfile({
+      const res = await profileApi.update({
         full_name: fullName.trim(),
         phone: phone.trim() || null,
         password_change: newPwd ? { current_password: curPwd, new_password: newPwd } : undefined,
