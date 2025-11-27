@@ -55,6 +55,20 @@ export default function JobBoard() {
     if (Number.isNaN(d.getTime())) return "";
     return d.toLocaleDateString();
   };
+  // Helper để parse skills từ string JSON sang Array
+  const getJobSkills = (jobStringOrArray) => {
+    if (!jobStringOrArray) return [];
+    // Nếu API trả về đã là mảng thì dùng luôn
+    if (Array.isArray(jobStringOrArray)) return jobStringOrArray;
+    
+    try {
+      // Nếu là string thì parse ra
+      return JSON.parse(jobStringOrArray);
+    } catch (e) {
+      console.error("Error parsing skills:", e);
+      return [];
+    }
+  };
 
   // ---------- Load initial jobs & on search ----------
   useEffect(() => {
@@ -413,6 +427,21 @@ export default function JobBoard() {
                     {selectedJob.description}
                   </p>
                 </div>
+                {selectedJob.skills && (
+  <div className="mt-6 border-t border-white/10 pt-4">
+    <h4 className="font-semibold mb-3">Required Skills</h4>
+    <div className="flex flex-wrap gap-2">
+      {getJobSkills(selectedJob.skills).map((skill, index) => (
+        <span
+          key={skill.skill_id || index}
+          className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-sm border border-blue-500/30"
+        >
+          {skill.name}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
               </div>
             )}
             {!jobLoading && !selectedJob && (

@@ -13,7 +13,12 @@ class Application:
                     us.phone,
                     a.status,
                     a.cv_path,
-                    IFNULL(GROUP_CONCAT(sk.name ORDER BY sk.name SEPARATOR ', '), '') AS skills
+                    JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'skill_id', sk.skill_id,
+                        'name', sk.name
+                    )
+                ) AS skills
                 FROM applications AS a
                 JOIN users AS us 
                     ON a.user_id = us.user_id
@@ -41,7 +46,7 @@ class Application:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-                SELECT jb.job_id, jb.title, jb.description, jb.location, cp.name
+                SELECT a.application_id, jb.job_id, jb.title, jb.description, jb.location, cp.name
                 FROM applications as a
                 JOIN jobs as jb on a.job_id = jb.job_id
                 JOIN companies as cp on jb.company_id = cp.company_id
@@ -80,7 +85,6 @@ class Application:
         conn = get_connection()
         try:
             with conn.cursor() as cursor:
-                # Ensure three placeholders for three values
                 cursor.execute("""
                     INSERT INTO applications (job_id, user_id, cv_path)
                     VALUES (%s, %s, %s)
@@ -91,7 +95,6 @@ class Application:
             conn.commit()
             return True, created_id
         except Exception as e:
-            # log error if you have logging
             try:
                 conn.rollback()
             except:
@@ -102,4 +105,15 @@ class Application:
                 conn.close()
             except:
                 pass
+    def delete(application_id):
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM applications WHERE application_id = %s", (application_id, ));
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return {"success": True}
+        except Exception as e:
+            return {"success": False, "error": e}
 

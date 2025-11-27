@@ -15,6 +15,7 @@ const SeekerApplications = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+
     const fetchApplications = async () => {
       try {
         const res = await ApplicationApi.getApplicationList();
@@ -56,6 +57,29 @@ const SeekerApplications = () => {
 
     fetchApplications();
   }, []);
+const handleDelete = async (applicationId, e) => {
+  e.stopPropagation();
+
+  if (!applicationId) {
+    console.error("Missing application_id:", applicationId);
+    return alert("Missing application id");
+  }
+
+  const confirmDelete = window.confirm("Are you sure?");
+  if (!confirmDelete) return;
+
+  try {
+    await ApplicationApi.deleteapply(applicationId);
+
+    // remove from frontend
+    setJobs(prev => prev.filter(j => j.application_id !== applicationId));
+
+  } catch (err) {
+    console.error("Failed to delete application:", err);
+    alert("Delete failed");
+  }
+};
+
 
   if (loading) {
     return (
@@ -118,7 +142,7 @@ const SeekerApplications = () => {
                 job.id || job.job_id ? 'cursor-pointer' : 'cursor-default'
               }`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-cen.mapter gap-2">
                 <Briefcase className="w-5 h-5 text-gray-500" />
                 <h2 className="text-lg font-semibold text-gray-800">
                   {job.title || 'No title'}
@@ -144,6 +168,14 @@ const SeekerApplications = () => {
                   {job.name}
                 </p>
               )}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={(e) => handleDelete(job.application_id ?? job.id ?? job.job_id, e)}
+                  className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Delete Application
+                </button>
+              </div>
 
 
               {!job.id && !job.job_id && (
@@ -152,8 +184,10 @@ const SeekerApplications = () => {
                 </p>
               )}
             </div>
+              
           ))}
         </div>
+        
       )}
     </div>
   );

@@ -27,14 +27,6 @@ const jobApi = {
     skills.forEach(s => params.append('skills', s));
     return axiosClient.get('/job/by-skill?' + params.toString());
   },
-  getByFilter: ({ skills = [], location, min_salary, max_salary }) => {
-    const params = new URLSearchParams();
-    skills.forEach(s => params.append('skills', s));
-    if (location) params.append('location', location);
-    if (min_salary) params.append('min_salary', min_salary);
-    if (max_salary) params.append('max_salary', max_salary);
-    return axiosClient.get('/job/by-filter?' + params.toString());
-  },
 };
 
 export default jobApi;

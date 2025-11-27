@@ -58,7 +58,19 @@ const CandidateDashboard = () => {
       setApplications([]);
     }
   }, [jobId]);
-
+  const getJobSkills = (jobStringOrArray) => {
+    if (!jobStringOrArray) return [];
+    // Nếu API trả về đã là mảng thì dùng luôn
+    if (Array.isArray(jobStringOrArray)) return jobStringOrArray;
+    
+    try {
+      // Nếu là string thì parse ra
+      return JSON.parse(jobStringOrArray);
+    } catch (e) {
+      console.error("Error parsing skills:", e);
+      return [];
+    }
+  };
   const handleUpdateStatus = async (applicationId, action) => {
     try {
       setActionLoadingId(applicationId);
@@ -167,11 +179,25 @@ const CandidateDashboard = () => {
         </p>
 
         {/* ✅ Skills block (optional, only if exists) */}
+        {/* ✅ Skills block (updated) */}
         {app.skills && (
-          <p className="text-gray-700">
-            <span className="font-medium text-gray-900">Skills:</span>{" "}
-            {Array.isArray(app.skills) ? app.skills.join(", ") : app.skills}
-          </p>
+          <div className="mt-1">
+            <span className="font-medium text-gray-900">Skills:</span>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {getJobSkills(app.skills).map((skill, idx) => {
+                // Xử lý trường hợp skill là object {name: "AWS"} hoặc string "AWS"
+                const name = typeof skill === "string" ? skill : skill.name;
+                return (
+                  <span
+                    key={idx}
+                    className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
+                  >
+                    {name}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
 

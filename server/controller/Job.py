@@ -110,9 +110,20 @@ class Job:
                 j.salary_max,
                 j.employment_type,
                 j.posted_at,
-                j.expires_at
+                j.expires_at,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'skill_id', sk.skill_id,
+                        'name', sk.name
+                    )
+                ) AS skills
             FROM jobs j
+            LEFT JOIN job_skills AS jb_sk 
+                    ON j.job_id = jb_sk.job_id
+            LEFT JOIN skills AS sk 
+                ON jb_sk.skill_id = sk.skill_id
             WHERE j.job_id=%s
+            GROUP BY j.job_id
         """, (job_id,))
         result = cursor.fetchone()
         cursor.close()

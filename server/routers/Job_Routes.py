@@ -154,7 +154,8 @@ def job_detail(job_id: int):
         "postedAt": job["posted_at"].isoformat() if job["posted_at"] else None,
         "salary_min": job.get("salary_min", None),
         "salary_max": job.get("salary_max", None),
-        "type": job.get("employment_type", "Full-time")
+        "type": job.get("employment_type", "Full-time"),
+        "skills": job.get("skills")
     }
 
                        

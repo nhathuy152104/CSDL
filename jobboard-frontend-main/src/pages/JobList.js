@@ -72,7 +72,7 @@
       setSkillFiltering(true);
       try {
         // jobApi.getBySkill(ids) must exist and accept array
-        const res = await jobApi.getByFilter(ids);
+        const res = await jobApi.getBySkill(ids);
         const data = res.data;
         setJobs(Array.isArray(data) ? data : (data?.jobs ?? []));
       } catch (err) {

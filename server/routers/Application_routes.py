@@ -82,3 +82,6 @@ def get_cv(filename: str):
         raise HTTPException(404, "CV not found")
 
     return FileResponse(str(file_path))
+@router.delete("/{application_id}")
+def dl_app(application_id):
+    return Application.delete(application_id)

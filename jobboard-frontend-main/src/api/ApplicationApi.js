@@ -16,7 +16,7 @@ const applyWithCV = (jobId, file) => {
 const ApplicationApi = {
   apply: (id) => axiosClient.post(`/application/apply/${id}`, {}), 
   applyWithCV,
-
+  deleteapply: (application_id) => axiosClient.delete(`/application/${application_id}`, {}),
   getApplicationList: () => axiosClient.get("/application/application_list"),
 
   getCandidateList: (jobId) =>
